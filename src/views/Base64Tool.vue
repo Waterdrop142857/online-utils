@@ -22,16 +22,6 @@
         </button>
       </div>
 
-      <!-- 输入区域 -->
-      <div class="input-section">
-        <label>{{ mode === 'encode' ? '原始文本' : 'Base64 密文' }}</label>
-        <textarea
-          v-model="inputText"
-          :placeholder="mode === 'encode' ? '请输入要编码的文本...' : '请输入要解码的 Base64 字符串...'"
-          rows="5"
-        ></textarea>
-      </div>
-
       <!-- 选项 -->
       <div class="options-section">
         <label class="checkbox-label">
@@ -40,16 +30,31 @@
         </label>
       </div>
 
+      <!-- 输入区域 -->
+      <div class="input-section">
+        <label>{{ mode === 'encode' ? '原始文本' : 'Base64 密文' }}</label>
+        <textarea
+          v-model="inputText"
+          :placeholder="mode === 'encode' ? '请输入要编码的文本...' : '请输入要解码的 Base64 字符串...'"
+          rows="5"
+        ></textarea>
+        <div class="input-actions">
+          <button class="action-btn small" @click="pasteFromClipboard">
+            📋 粘贴
+          </button>
+          <button class="action-btn small" @click="clearInput">
+            清空
+          </button>
+        </div>
+      </div>
+
       <!-- 操作按钮 -->
       <div class="action-section">
-        <button class="action-btn" @click="process" :disabled="!canProcess">
+        <button class="action-btn primary" @click="process" :disabled="!canProcess">
           {{ mode === 'encode' ? '📤 编码' : '📥 解码' }}
         </button>
         <button class="action-btn secondary" @click="swapMode">
-          🔄 切换模式
-        </button>
-        <button class="action-btn secondary" @click="clearAll">
-          清空
+          🔄 切换
         </button>
       </div>
 
@@ -59,7 +64,7 @@
         <textarea v-model="outputText" rows="5" readonly></textarea>
         <div class="output-actions">
           <button class="copy-btn" @click="copyResult">
-            {{ copied ? '✅ 已复制' : '📋 复制结果' }}
+            {{ copied ? '✅ 已复制' : '📋 复制' }}
           </button>
         </div>
       </div>
@@ -86,51 +91,35 @@ const canProcess = computed(() => {
   return inputText.value.trim().length > 0
 })
 
-// Base64 编码
 const encodeBase64 = (str) => {
   try {
-    // 处理 Unicode 字符
     const utf8Bytes = new TextEncoder().encode(str)
     let binary = ''
     for (let i = 0; i < utf8Bytes.length; i++) {
       binary += String.fromCharCode(utf8Bytes[i])
     }
     let result = btoa(binary)
-    
-    // URL 安全模式
     if (urlSafe.value) {
       result = result.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
     }
-    
     return result
   } catch (e) {
     throw new Error('编码失败')
   }
 }
 
-// Base64 解码
 const decodeBase64 = (str) => {
   try {
     let input = str.trim()
-    
-    // URL 安全模式还原
     if (urlSafe.value) {
-      // 补充 = 号
       const padCount = (4 - input.length % 4) % 4
       input = input.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat(padCount)
     }
-    
-    // 验证 Base64 格式
-    if (!/^[A-Za-z0-9+/]*=*$/.test(input) && !urlSafe.value) {
-      throw new Error('无效的 Base64 格式')
-    }
-    
     const binary = atob(input)
     const bytes = new Uint8Array(binary.length)
     for (let i = 0; i < binary.length; i++) {
       bytes[i] = binary.charCodeAt(i)
     }
-    
     return new TextDecoder().decode(bytes)
   } catch (e) {
     throw new Error('解码失败，请检查输入是否为有效的 Base64 字符串')
@@ -140,12 +129,10 @@ const decodeBase64 = (str) => {
 const process = () => {
   errorMsg.value = ''
   outputText.value = ''
-  
   if (!inputText.value.trim()) {
     errorMsg.value = '请输入内容'
     return
   }
-  
   try {
     if (mode.value === 'encode') {
       outputText.value = encodeBase64(inputText.value)
@@ -164,19 +151,28 @@ const swapMode = () => {
   errorMsg.value = ''
 }
 
-const clearAll = () => {
+const clearInput = () => {
   inputText.value = ''
   outputText.value = ''
   errorMsg.value = ''
+}
+
+const pasteFromClipboard = async () => {
+  try {
+    const text = await navigator.clipboard.readText()
+    inputText.value = text
+    outputText.value = ''
+    errorMsg.value = ''
+  } catch (e) {
+    alert('无法读取剪贴板内容，请手动粘贴')
+  }
 }
 
 const copyResult = async () => {
   try {
     await navigator.clipboard.writeText(outputText.value)
     copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 2000)
+    setTimeout(() => copied.value = false, 2000)
   } catch (e) {
     errorMsg.value = '复制失败，请手动复制'
   }
@@ -270,10 +266,7 @@ const copyResult = async () => {
   --secondary-hover: #e0e0e0;
 }
 
-.tool-header {
-  margin-bottom: 2rem;
-}
-
+.tool-header { margin-bottom: 2rem; }
 .back-btn {
   display: inline-block;
   margin-bottom: 1rem;
@@ -281,15 +274,8 @@ const copyResult = async () => {
   text-decoration: none;
   cursor: pointer;
 }
-
-.back-btn:hover {
-  text-decoration: underline;
-}
-
-.tool-header h1 {
-  font-size: 2rem;
-  color: var(--text-color);
-}
+.back-btn:hover { text-decoration: underline; }
+.tool-header h1 { font-size: 2rem; color: var(--text-color); }
 
 .tool-content {
   background: var(--bg-color);
@@ -303,7 +289,6 @@ const copyResult = async () => {
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
-
 .mode-switch button {
   flex: 1;
   padding: 0.75rem 1.5rem;
@@ -315,26 +300,29 @@ const copyResult = async () => {
   transition: all 0.2s;
   color: var(--text-color);
 }
-
 .mode-switch button.active {
   border-color: var(--primary-color);
   background: var(--primary-color);
   color: #fff;
 }
 
-.input-section,
-.options-section,
-.output-section {
-  margin-bottom: 1.5rem;
+.options-section { margin-bottom: 1.5rem; }
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: var(--text-color);
 }
+.checkbox-label input[type="checkbox"] { width: auto; cursor: pointer; }
 
+.input-section, .output-section { margin-bottom: 1.5rem; }
 label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: var(--text-color);
 }
-
 textarea {
   width: 100%;
   padding: 0.75rem;
@@ -346,75 +334,61 @@ textarea {
   background: var(--input-bg);
   color: var(--text-color);
 }
-
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
 }
 
-.checkbox-label {
+.input-actions {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
   cursor: pointer;
+  transition: all 0.2s;
+}
+.action-btn.small {
+  background: var(--secondary-bg);
   color: var(--text-color);
 }
-
-.checkbox-label input[type="checkbox"] {
-  width: auto;
-  cursor: pointer;
-}
+.action-btn.small:hover { background: var(--secondary-hover); }
 
 .action-section {
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
-
-.action-btn {
+.action-btn.primary {
   flex: 1;
   padding: 0.875rem 1.5rem;
-  border: none;
-  border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.action-btn:first-child {
   background: var(--primary-color);
   color: #fff;
 }
-
-.action-btn:first-child:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.action-btn:first-child:disabled {
-  background: var(--text-muted);
-  cursor: not-allowed;
-}
-
+.action-btn.primary:hover:not(:disabled) { background: var(--primary-hover); }
+.action-btn.primary:disabled { background: var(--text-muted); cursor: not-allowed; }
 .action-btn.secondary {
   background: var(--secondary-bg);
   color: var(--text-color);
 }
-
-.action-btn.secondary:hover {
-  background: var(--secondary-hover);
-}
+.action-btn.secondary:hover { background: var(--secondary-hover); }
 
 .output-section textarea {
   background: var(--section-bg);
   color: var(--text-color);
 }
-
 .output-actions {
+  display: flex;
+  gap: 0.5rem;
   margin-top: 0.5rem;
 }
-
 .copy-btn {
   padding: 0.5rem 1rem;
   background: var(--primary-color);
@@ -425,10 +399,7 @@ textarea:focus {
   font-size: 0.9rem;
   transition: all 0.2s;
 }
-
-.copy-btn:hover {
-  background: var(--primary-hover);
-}
+.copy-btn:hover { background: var(--primary-hover); }
 
 .error-msg {
   padding: 1rem;

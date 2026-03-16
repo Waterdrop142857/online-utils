@@ -24,18 +24,16 @@
 
       <!-- 选项 -->
       <div class="options-section">
-        <div class="option-group">
-          <label>编码模式</label>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" name="encodeMode" value="standard" v-model="encodeMode" />
-              <span>标准 (encodeURIComponent)</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="encodeMode" value="full" v-model="encodeMode" />
-              <span>完整 (encodeURI)</span>
-            </label>
-          </div>
+        <label>编码模式</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="encodeMode" value="standard" v-model="encodeMode" />
+            <span>标准 (encodeURIComponent)</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="encodeMode" value="full" v-model="encodeMode" />
+            <span>完整 (encodeURI)</span>
+          </label>
         </div>
       </div>
 
@@ -45,7 +43,7 @@
         <textarea
           v-model="inputText"
           :placeholder="mode === 'encode' ? '请输入要编码的 URL 或文本...' : '请输入要解码的 URL...'"
-          rows="4"
+          rows="5"
         ></textarea>
         <div class="input-actions">
           <button class="action-btn small" @click="pasteFromClipboard">
@@ -59,24 +57,24 @@
 
       <!-- 操作按钮 -->
       <div class="action-section">
-        <button class="action-btn" @click="process" :disabled="!canProcess">
+        <button class="action-btn primary" @click="process" :disabled="!canProcess">
           {{ mode === 'encode' ? '🔗 编码' : '🔓 解码' }}
         </button>
         <button class="action-btn secondary" @click="swapMode">
-          🔄 切换模式
+          🔄 切换
         </button>
       </div>
 
       <!-- 输出区域 -->
       <div class="output-section" v-if="outputText">
         <label>结果</label>
-        <textarea v-model="outputText" rows="4" readonly></textarea>
+        <textarea v-model="outputText" rows="5" readonly></textarea>
         <div class="output-actions">
           <button class="copy-btn" @click="copyResult">
-            {{ copied ? '✅ 已复制' : '📋 复制结果' }}
+            {{ copied ? '✅ 已复制' : '📋 复制' }}
           </button>
           <button class="copy-btn secondary" @click="openInNewTab" v-if="isValidUrl">
-            🌐 在新窗口打开
+            🌐 打开
           </button>
         </div>
       </div>
@@ -115,26 +113,18 @@ const isValidUrl = computed(() => {
 const process = () => {
   errorMsg.value = ''
   outputText.value = ''
-  
   if (!inputText.value.trim()) {
     errorMsg.value = '请输入内容'
     return
   }
-  
   try {
     if (mode.value === 'encode') {
-      if (encodeMode.value === 'full') {
-        outputText.value = encodeURI(inputText.value)
-      } else {
-        outputText.value = encodeURIComponent(inputText.value)
-      }
+      outputText.value = encodeMode.value === 'full' 
+        ? encodeURI(inputText.value) 
+        : encodeURIComponent(inputText.value)
     } else {
-      // 尝试解码，处理多次编码的情况
       let decoded = inputText.value
-      let prevDecoded
-      let maxIterations = 10
-      let iterations = 0
-      
+      let prevDecoded, iterations = 0
       do {
         prevDecoded = decoded
         try {
@@ -143,16 +133,13 @@ const process = () => {
         } catch (e) {
           break
         }
-      } while (decoded !== prevDecoded && iterations < maxIterations)
-      
+      } while (decoded !== prevDecoded && iterations < 10)
       outputText.value = decoded
     }
   } catch (e) {
-    if (mode.value === 'decode') {
-      errorMsg.value = '解码失败：无效的 URL 编码格式'
-    } else {
-      errorMsg.value = '编码失败：' + e.message
-    }
+    errorMsg.value = mode.value === 'decode' 
+      ? '解码失败：无效的 URL 编码格式' 
+      : '编码失败：' + e.message
   }
 }
 
@@ -184,9 +171,7 @@ const copyResult = async () => {
   try {
     await navigator.clipboard.writeText(outputText.value)
     copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 2000)
+    setTimeout(() => copied.value = false, 2000)
   } catch (e) {
     errorMsg.value = '复制失败，请手动复制'
   }
@@ -286,10 +271,7 @@ const openInNewTab = () => {
   --secondary-hover: #e0e0e0;
 }
 
-.tool-header {
-  margin-bottom: 2rem;
-}
-
+.tool-header { margin-bottom: 2rem; }
 .back-btn {
   display: inline-block;
   margin-bottom: 1rem;
@@ -297,15 +279,8 @@ const openInNewTab = () => {
   text-decoration: none;
   cursor: pointer;
 }
-
-.back-btn:hover {
-  text-decoration: underline;
-}
-
-.tool-header h1 {
-  font-size: 2rem;
-  color: var(--text-color);
-}
+.back-btn:hover { text-decoration: underline; }
+.tool-header h1 { font-size: 2rem; color: var(--text-color); }
 
 .tool-content {
   background: var(--bg-color);
@@ -319,7 +294,6 @@ const openInNewTab = () => {
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
-
 .mode-switch button {
   flex: 1;
   padding: 0.75rem 1.5rem;
@@ -331,29 +305,23 @@ const openInNewTab = () => {
   transition: all 0.2s;
   color: var(--text-color);
 }
-
 .mode-switch button.active {
   border-color: var(--primary-color);
   background: var(--primary-color);
   color: #fff;
 }
 
-.options-section {
-  margin-bottom: 1.5rem;
-}
-
-.option-group label {
+.options-section { margin-bottom: 1.5rem; }
+.options-section label {
   display: block;
   margin-bottom: 0.75rem;
   font-weight: 500;
   color: var(--text-color);
 }
-
 .radio-group {
   display: flex;
   gap: 1.5rem;
 }
-
 .radio-label {
   display: flex;
   align-items: center;
@@ -361,24 +329,15 @@ const openInNewTab = () => {
   cursor: pointer;
   color: var(--text-color);
 }
+.radio-label input[type="radio"] { width: auto; cursor: pointer; }
 
-.radio-label input[type="radio"] {
-  width: auto;
-  cursor: pointer;
-}
-
-.input-section,
-.output-section {
-  margin-bottom: 1.5rem;
-}
-
+.input-section, .output-section { margin-bottom: 1.5rem; }
 label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: var(--text-color);
 }
-
 textarea {
   width: 100%;
   padding: 0.75rem;
@@ -390,7 +349,6 @@ textarea {
   background: var(--input-bg);
   color: var(--text-color);
 }
-
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
@@ -402,64 +360,50 @@ textarea:focus {
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
-
 .action-btn {
-  flex: 1;
-  padding: 0.875rem 1.5rem;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: 6px;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
 }
-
 .action-btn.small {
-  flex: auto;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
   background: var(--secondary-bg);
   color: var(--text-color);
 }
+.action-btn.small:hover { background: var(--secondary-hover); }
 
-.action-btn.small:hover {
-  background: var(--secondary-hover);
+.action-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
-
-.action-btn:first-child {
+.action-btn.primary {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   background: var(--primary-color);
   color: #fff;
 }
-
-.action-btn:first-child:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.action-btn:first-child:disabled {
-  background: var(--text-muted);
-  cursor: not-allowed;
-}
-
+.action-btn.primary:hover:not(:disabled) { background: var(--primary-hover); }
+.action-btn.primary:disabled { background: var(--text-muted); cursor: not-allowed; }
 .action-btn.secondary {
   background: var(--secondary-bg);
   color: var(--text-color);
 }
-
-.action-btn.secondary:hover {
-  background: var(--secondary-hover);
-}
+.action-btn.secondary:hover { background: var(--secondary-hover); }
 
 .output-section textarea {
   background: var(--section-bg);
   color: var(--text-color);
 }
-
 .output-actions {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
-
 .copy-btn {
   padding: 0.5rem 1rem;
   background: var(--primary-color);
@@ -470,19 +414,12 @@ textarea:focus {
   font-size: 0.9rem;
   transition: all 0.2s;
 }
-
-.copy-btn:hover {
-  background: var(--primary-hover);
-}
-
+.copy-btn:hover { background: var(--primary-hover); }
 .copy-btn.secondary {
   background: var(--secondary-bg);
   color: var(--text-color);
 }
-
-.copy-btn.secondary:hover {
-  background: var(--secondary-hover);
-}
+.copy-btn.secondary:hover { background: var(--secondary-hover); }
 
 .error-msg {
   padding: 1rem;

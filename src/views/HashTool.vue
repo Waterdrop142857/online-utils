@@ -27,7 +27,7 @@
         <textarea
           v-model="inputText"
           placeholder="请输入要计算哈希的文本..."
-          rows="4"
+          rows="5"
         ></textarea>
         <div class="input-actions">
           <button class="action-btn small" @click="pasteFromClipboard">
@@ -41,7 +41,7 @@
 
       <!-- 操作按钮 -->
       <div class="action-section">
-        <button class="action-btn" @click="computeHash" :disabled="!canCompute">
+        <button class="action-btn primary" @click="computeHash" :disabled="!canCompute">
           🔐 计算哈希
         </button>
       </div>
@@ -54,10 +54,10 @@
         </div>
         <div class="output-actions">
           <button class="copy-btn" @click="copyResult">
-            {{ copied ? '✅ 已复制' : '📋 复制结果' }}
+            {{ copied ? '✅ 已复制' : '📋 复制' }}
           </button>
           <button class="copy-btn secondary" @click="copyWithInfo">
-            📋 复制详情
+            📋 详情
           </button>
         </div>
       </div>
@@ -100,37 +100,19 @@ const algorithmInfo = computed(() => {
 })
 
 const computeHash = () => {
-  if (!inputText.value.trim()) {
-    return
-  }
+  if (!inputText.value.trim()) return
 
   let hash
   switch (algorithm.value) {
-    case 'md5':
-      hash = CryptoJS.MD5(inputText.value)
-      break
-    case 'sha1':
-      hash = CryptoJS.SHA1(inputText.value)
-      break
-    case 'sha256':
-      hash = CryptoJS.SHA256(inputText.value)
-      break
-    case 'sha224':
-      hash = CryptoJS.SHA224(inputText.value)
-      break
-    case 'sha384':
-      hash = CryptoJS.SHA384(inputText.value)
-      break
-    case 'sha512':
-      hash = CryptoJS.SHA512(inputText.value)
-      break
-    case 'ripemd160':
-      hash = CryptoJS.RIPEMD160(inputText.value)
-      break
-    default:
-      hash = CryptoJS.MD5(inputText.value)
+    case 'md5': hash = CryptoJS.MD5(inputText.value); break
+    case 'sha1': hash = CryptoJS.SHA1(inputText.value); break
+    case 'sha256': hash = CryptoJS.SHA256(inputText.value); break
+    case 'sha224': hash = CryptoJS.SHA224(inputText.value); break
+    case 'sha384': hash = CryptoJS.SHA384(inputText.value); break
+    case 'sha512': hash = CryptoJS.SHA512(inputText.value); break
+    case 'ripemd160': hash = CryptoJS.RIPEMD160(inputText.value); break
+    default: hash = CryptoJS.MD5(inputText.value)
   }
-
   hashResult.value = hash.toString()
 }
 
@@ -153,9 +135,7 @@ const copyResult = async () => {
   try {
     await navigator.clipboard.writeText(hashResult.value)
     copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 2000)
+    setTimeout(() => copied.value = false, 2000)
   } catch (e) {
     alert('复制失败，请手动复制')
   }
@@ -164,7 +144,6 @@ const copyResult = async () => {
 const copyWithInfo = async () => {
   const algo = algorithms.find(a => a.value === algorithm.value)
   const info = `算法：${algo.label}\n输入：${inputText.value.substring(0, 50)}${inputText.value.length > 50 ? '...' : ''}\n哈希：${hashResult.value}`
-  
   try {
     await navigator.clipboard.writeText(info)
     alert('详情已复制到剪贴板')
@@ -257,10 +236,7 @@ const copyWithInfo = async () => {
   --info-text: #1976d2;
 }
 
-.tool-header {
-  margin-bottom: 2rem;
-}
-
+.tool-header { margin-bottom: 2rem; }
 .back-btn {
   display: inline-block;
   margin-bottom: 1rem;
@@ -268,15 +244,8 @@ const copyWithInfo = async () => {
   text-decoration: none;
   cursor: pointer;
 }
-
-.back-btn:hover {
-  text-decoration: underline;
-}
-
-.tool-header h1 {
-  font-size: 2rem;
-  color: var(--text-color);
-}
+.back-btn:hover { text-decoration: underline; }
+.tool-header h1 { font-size: 2rem; color: var(--text-color); }
 
 .tool-content {
   background: var(--bg-color);
@@ -285,23 +254,18 @@ const copyWithInfo = async () => {
   box-shadow: var(--shadow);
 }
 
-.algorithm-section {
-  margin-bottom: 1.5rem;
-}
-
+.algorithm-section { margin-bottom: 1.5rem; }
 .algorithm-section label {
   display: block;
   margin-bottom: 0.75rem;
   font-weight: 500;
   color: var(--text-color);
 }
-
 .algorithm-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 0.5rem;
 }
-
 .algorithm-grid button {
   padding: 0.75rem 0.5rem;
   border: 1px solid var(--border-color);
@@ -312,29 +276,20 @@ const copyWithInfo = async () => {
   transition: all 0.2s;
   color: var(--text-color);
 }
-
-.algorithm-grid button:hover {
-  background: var(--secondary-bg);
-}
-
+.algorithm-grid button:hover { background: var(--secondary-bg); }
 .algorithm-grid button.active {
   border-color: var(--primary-color);
   background: var(--primary-color);
   color: #fff;
 }
 
-.input-section,
-.output-section {
-  margin-bottom: 1.5rem;
-}
-
+.input-section, .output-section { margin-bottom: 1.5rem; }
 label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: var(--text-color);
 }
-
 textarea {
   width: 100%;
   padding: 0.75rem;
@@ -346,7 +301,6 @@ textarea {
   background: var(--input-bg);
   color: var(--text-color);
 }
-
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
@@ -358,43 +312,35 @@ textarea:focus {
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
-
 .action-btn {
-  flex: 1;
-  padding: 0.875rem 1.5rem;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: 6px;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
 }
-
 .action-btn.small {
-  flex: auto;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
   background: var(--secondary-bg);
   color: var(--text-color);
 }
+.action-btn.small:hover { background: var(--secondary-hover); }
 
-.action-btn.small:hover {
-  background: var(--secondary-hover);
+.action-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
-
-.action-btn:first-child {
+.action-btn.primary {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   background: var(--primary-color);
   color: #fff;
 }
-
-.action-btn:first-child:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.action-btn:first-child:disabled {
-  background: var(--text-muted);
-  cursor: not-allowed;
-}
+.action-btn.primary:hover:not(:disabled) { background: var(--primary-hover); }
+.action-btn.primary:disabled { background: var(--text-muted); cursor: not-allowed; }
 
 .hash-output {
   background: var(--section-bg);
@@ -403,7 +349,6 @@ textarea:focus {
   padding: 1rem;
   overflow-x: auto;
 }
-
 .hash-output code {
   font-family: 'Consolas', 'Monaco', monospace;
   font-size: 0.9rem;
@@ -416,7 +361,6 @@ textarea:focus {
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
-
 .copy-btn {
   padding: 0.5rem 1rem;
   background: var(--primary-color);
@@ -427,19 +371,12 @@ textarea:focus {
   font-size: 0.9rem;
   transition: all 0.2s;
 }
-
-.copy-btn:hover {
-  background: var(--primary-hover);
-}
-
+.copy-btn:hover { background: var(--primary-hover); }
 .copy-btn.secondary {
   background: var(--secondary-bg);
   color: var(--text-color);
 }
-
-.copy-btn.secondary:hover {
-  background: var(--secondary-hover);
-}
+.copy-btn.secondary:hover { background: var(--secondary-hover); }
 
 .info-msg {
   margin-top: 1rem;
