@@ -8,36 +8,28 @@ export const tools = [
     path: '/tools/aes'
   },
   {
-    id: 'json-format',
-    name: 'JSON 格式化',
-    description: '在线 JSON 格式化、美化和验证工具',
-    icon: '📋',
-    category: '数据处理',
-    path: '/tools/json-format'
-  },
-  {
     id: 'base64',
     name: 'Base64 编解码',
-    description: 'Base64 编码和解码工具',
+    description: 'Base64 编码和解码工具，支持 URL 安全模式',
     icon: '🔐',
     category: '数据处理',
     path: '/tools/base64'
   },
   {
-    id: 'url-encode',
-    name: 'URL 编解码',
-    description: 'URL 编码和解码工具',
-    icon: '🔗',
-    category: '数据处理',
-    path: '/tools/url-encode'
-  },
-  {
-    id: 'md5',
-    name: 'MD5 哈希',
-    description: '在线 MD5 哈希生成工具',
+    id: 'hash',
+    name: '哈希计算',
+    description: '支持 MD5、SHA-1、SHA-256 等多种哈希算法',
     icon: '🔒',
     category: '加密工具',
-    path: '/tools/md5'
+    path: '/tools/hash'
+  },
+  {
+    id: 'url-encode',
+    name: 'URL 编解码',
+    description: 'URL 编码和解码工具，支持自动检测多重编码',
+    icon: '🔗',
+    category: '数据处理',
+    path: '/tools/url'
   },
   {
     id: 'uuid',
