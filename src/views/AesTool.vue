@@ -1,45 +1,28 @@
 <template>
-  <div class="aes-tool">
-    <header class="tool-header">
-      <router-link to="/" class="back-btn">← 返回导航</router-link>
-      <h1>🔐 AES 加解密</h1>
-    </header>
-
-    <main class="tool-content">
-      <!-- 模式切换 -->
-      <div class="mode-switch">
-        <button
-          :class="{ active: mode === 'encrypt' }"
-          @click="mode = 'encrypt'"
-        >
-          加密
-        </button>
-        <button
-          :class="{ active: mode === 'decrypt' }"
-          @click="mode = 'decrypt'"
-        >
-          解密
-        </button>
-      </div>
-
-      <!-- 输入区域 -->
-      <div class="input-section">
-        <label>{{ mode === 'encrypt' ? '明文' : '密文' }}</label>
-        <textarea
-          v-model="inputText"
-          :placeholder="mode === 'encrypt' ? '请输入要加密的文本...' : '请输入要解密的密文（Base64 格式）...'"
-          rows="5"
-        ></textarea>
-        <div class="input-actions">
-          <button class="action-btn small" @click="pasteFromClipboard">
-            📋 粘贴
-          </button>
-          <button class="action-btn small" @click="clearInput">
-            清空
-          </button>
-        </div>
-      </div>
-
+  <ToolLayout
+    title="AES 加解密"
+    icon="🔐"
+    v-model="mode"
+    :modes="[
+      { label: '加密', value: 'encrypt' },
+      { label: '解密', value: 'decrypt' }
+    ]"
+    v-model:input="inputText"
+    :inputLabel="mode === 'encrypt' ? '明文' : '密文'"
+    :inputPlaceholder="mode === 'encrypt' ? '请输入要加密的文本...' : '请输入要解密的密文（Base64 格式）...'"
+    :output="outputText"
+    :primaryActionLabel="mode === 'encrypt' ? '🔒 加密' : '🔓 解密'"
+    :canProcess="canProcess"
+    :showSwap="true"
+    :error="errorMsg"
+    :copied="copied"
+    @process="process"
+    @swap="swapMode"
+    @clear="clearInput"
+    @paste="pasteFromClipboard"
+    @copy="copyResult"
+  >
+    <template #options>
       <!-- 高级选项 -->
       <div class="advanced-wrapper">
         <div class="advanced-toggle" :class="{ open: showAdvanced }" @click="showAdvanced = !showAdvanced">
@@ -116,45 +99,26 @@
           <span>自动加盐补足密钥长度（推荐）</span>
         </label>
       </div>
+    </template>
 
-      <!-- 操作按钮 -->
-      <div class="action-section">
-        <button class="action-btn primary" @click="process" :disabled="!canProcess">
-          {{ mode === 'encrypt' ? '🔒 加密' : '🔓 解密' }}
-        </button>
-        <button class="action-btn secondary" @click="swapMode">
-          🔄 切换
-        </button>
+    <template #output-top>
+      <div class="output-info" v-if="encryptionInfo">
+        <p><strong>加密信息：</strong>{{ encryptionInfo }}</p>
       </div>
+    </template>
 
-      <!-- 输出区域 -->
-      <div class="output-section" v-if="outputText">
-        <label>结果</label>
-        <textarea v-model="outputText" rows="5" readonly></textarea>
-        <div class="output-info" v-if="encryptionInfo">
-          <p><strong>加密信息：</strong>{{ encryptionInfo }}</p>
-        </div>
-        <div class="output-actions">
-          <button class="copy-btn" @click="copyResult">
-            {{ copied ? '✅ 已复制' : '📋 复制' }}
-          </button>
-          <button class="copy-btn secondary" @click="copyConfig" v-if="mode === 'encrypt'">
-            📋 配置
-          </button>
-        </div>
-      </div>
-
-      <!-- 错误提示 -->
-      <div class="error-msg" v-if="errorMsg">
-        ❌ {{ errorMsg }}
-      </div>
-    </main>
-  </div>
+    <template #output-actions>
+      <button class="copy-btn secondary" @click="copyConfig" v-if="mode === 'encrypt'">
+        📋 配置
+      </button>
+    </template>
+  </ToolLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import CryptoJS from 'crypto-js'
+import ToolLayout from '../components/ToolLayout.vue'
 
 const mode = ref('encrypt')
 const inputText = ref('')
@@ -327,159 +291,23 @@ const copyConfig = async () => {
 </script>
 
 <style scoped>
-.aes-tool {
-  --text-color: #333;
-  --text-light: #666;
-  --text-muted: #999;
-  --bg-color: #fff;
-  --page-bg: #f5f5f5;
-  --border-color: #e0e0e0;
-  --input-bg: #fff;
-  --section-bg: #f9f9f9;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --primary-color: #42b983;
-  --primary-hover: #3aa876;
-  --error-bg: #fff3f3;
-  --error-border: #ffcccc;
-  --error-text: #cc0000;
-  --info-bg: #e8f5e9;
-  --info-text: #2e7d32;
-  --secondary-bg: #f0f0f0;
-  --secondary-hover: #e0e0e0;
-
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  background: var(--page-bg);
-}
-
-@media (prefers-color-scheme: dark) {
-  .aes-tool {
-    --text-color: #e0e0e0;
-    --text-light: #b0b0b0;
-    --text-muted: #808080;
-    --bg-color: #1e1e1e;
-    --page-bg: #121212;
-    --border-color: #333;
-    --input-bg: #2a2a2a;
-    --section-bg: #2a2a2a;
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --primary-color: #42b983;
-    --primary-hover: #3aa876;
-    --error-bg: #3a1a1a;
-    --error-border: #5c2b2b;
-    --error-text: #ff6b6b;
-    --info-bg: #1a3a2a;
-    --info-text: #66bb6a;
-    --secondary-bg: #333;
-    --secondary-hover: #444;
-  }
-}
-
-[data-theme="dark"] .aes-tool {
-  --text-color: #e0e0e0;
-  --text-light: #b0b0b0;
-  --text-muted: #808080;
-  --bg-color: #1e1e1e;
-  --page-bg: #121212;
-  --border-color: #333;
-  --input-bg: #2a2a2a;
-  --section-bg: #2a2a2a;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --primary-color: #42b983;
-  --primary-hover: #3aa876;
-  --error-bg: #3a1a1a;
-  --error-border: #5c2b2b;
-  --error-text: #ff6b6b;
-  --info-bg: #1a3a2a;
-  --info-text: #66bb6a;
-  --secondary-bg: #333;
-  --secondary-hover: #444;
-}
-
-[data-theme="light"] .aes-tool {
-  --text-color: #333;
-  --text-light: #666;
-  --text-muted: #999;
-  --bg-color: #fff;
-  --page-bg: #f5f5f5;
-  --border-color: #e0e0e0;
-  --input-bg: #fff;
-  --section-bg: #f9f9f9;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --primary-color: #42b983;
-  --primary-hover: #3aa876;
-  --error-bg: #fff3f3;
-  --error-border: #ffcccc;
-  --error-text: #cc0000;
-  --info-bg: #e8f5e9;
-  --info-text: #2e7d32;
-  --secondary-bg: #f0f0f0;
-  --secondary-hover: #e0e0e0;
-}
-
-.tool-header { margin-bottom: 2rem; }
-.back-btn {
-  display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--primary-color);
-  text-decoration: none;
-  cursor: pointer;
-}
-.back-btn:hover { text-decoration: underline; }
-.tool-header h1 { font-size: 2rem; color: var(--text-color); }
-
-.tool-content {
-  background: var(--bg-color);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: var(--shadow);
-}
-
-.mode-switch {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.mode-switch button {
-  flex: 1;
-  padding: 0.75rem 1.5rem;
-  border: 2px solid var(--border-color);
-  background: var(--bg-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--text-color);
-}
-.mode-switch button.active {
-  border-color: var(--primary-color);
-  background: var(--primary-color);
-  color: #fff;
-}
-
-.input-section, .key-section, .output-section { margin-bottom: 1.5rem; }
-label {
+.key-section { margin-bottom: 1.5rem; }
+.key-section label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: var(--text-color);
 }
-textarea, input, select {
+input, select {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 1rem;
   font-family: inherit;
-  background: var(--input-bg);
+  background: var(--card-bg);
   color: var(--text-color);
 }
-textarea { resize: vertical; }
-textarea:focus, input:focus, select:focus {
+input:focus, select:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
@@ -493,7 +321,7 @@ select { cursor: pointer; }
 .input-with-btn input { flex: 1; }
 .gen-btn {
   padding: 0.75rem 1rem;
-  background: var(--secondary-bg);
+  background: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
@@ -501,7 +329,7 @@ select { cursor: pointer; }
   color: var(--text-color);
   white-space: nowrap;
 }
-.gen-btn:hover { background: var(--secondary-hover); }
+.gen-btn:hover { background: var(--border-color); }
 
 .key-info {
   display: flex;
@@ -536,14 +364,14 @@ select { cursor: pointer; }
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background: var(--section-bg);
+  background: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   color: var(--text-color);
 }
-.advanced-toggle:hover { background: var(--secondary-bg); }
+.advanced-toggle:hover { background: var(--border-color); }
 .advanced-toggle.open {
   border-bottom: none;
   border-radius: 8px 8px 0 0;
@@ -552,7 +380,7 @@ select { cursor: pointer; }
 .advanced-toggle span.rotate { transform: rotate(180deg); }
 
 .advanced-section {
-  background: var(--section-bg);
+  background: var(--bg-color);
   border: 1px solid var(--border-color);
   border-top: none;
   border-radius: 0 0 8px 8px;
@@ -564,7 +392,6 @@ select { cursor: pointer; }
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: var(--text-color);
 }
 .radio-group {
   display: flex;
@@ -577,86 +404,26 @@ select { cursor: pointer; }
   gap: 0.5rem;
   cursor: pointer;
   font-weight: normal;
-  color: var(--text-color);
 }
-.radio-label input[type="radio"], .radio-label input[type="checkbox"] {
+.radio-label input[type="radio"] {
   width: auto;
   cursor: pointer;
 }
 
-.action-section {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.action-btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.action-btn.small {
-  background: var(--secondary-bg);
-  color: var(--text-color);
-}
-.action-btn.small:hover { background: var(--secondary-hover); }
-.action-btn.primary {
-  flex: 1;
-  padding: 0.875rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  background: var(--primary-color);
-  color: #fff;
-}
-.action-btn.primary:hover:not(:disabled) { background: var(--primary-hover); }
-.action-btn.primary:disabled { background: var(--text-muted); cursor: not-allowed; }
-.action-btn.secondary {
-  background: var(--secondary-bg);
-  color: var(--text-color);
-}
-.action-btn.secondary:hover { background: var(--secondary-hover); }
-
-.output-section textarea {
-  background: var(--section-bg);
-  color: var(--text-color);
-}
 .output-info {
-  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   padding: 0.75rem;
-  background: var(--info-bg);
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 0.9rem;
-  color: var(--info-text);
+  color: var(--primary-color);
 }
-.output-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-.copy-btn {
-  padding: 0.5rem 1rem;
-  background: var(--primary-color);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-.copy-btn:hover { background: var(--primary-hover); }
-.copy-btn.secondary {
-  background: var(--secondary-bg);
-  color: var(--text-color);
-}
-.copy-btn.secondary:hover { background: var(--secondary-hover); }
 
-.error-msg {
-  padding: 1rem;
-  background: var(--error-bg);
-  border: 1px solid var(--error-border);
-  border-radius: 8px;
-  color: var(--error-text);
+.copy-btn.secondary {
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
+.copy-btn.secondary:hover { background: var(--border-color); }
 </style>

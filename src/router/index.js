@@ -27,6 +27,11 @@ const routes = [
     component: () => import('../views/UrlTool.vue')
   },
   {
+    path: '/tools/totp',
+    name: 'totp',
+    component: () => import('../views/TotpTool.vue')
+  },
+  {
     path: '/tools/:toolId',
     name: 'tool',
     component: () => import('../views/ToolView.vue')

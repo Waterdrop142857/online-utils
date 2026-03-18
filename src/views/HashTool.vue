@@ -1,12 +1,21 @@
 <template>
-  <div class="hash-tool">
-    <header class="tool-header">
-      <router-link to="/" class="back-btn">← 返回导航</router-link>
-      <h1>🔒 哈希工具</h1>
-    </header>
-
-    <main class="tool-content">
-      <!-- 算法选择 -->
+  <ToolLayout
+    title="哈希工具"
+    icon="🔒"
+    v-model:input="inputText"
+    inputLabel="输入文本"
+    inputPlaceholder="请输入要计算哈希的文本..."
+    :output="hashResult"
+    outputLabel="哈希结果"
+    primaryActionLabel="🔐 计算哈希"
+    :canProcess="canCompute"
+    :copied="copied"
+    @process="computeHash"
+    @clear="clearInput"
+    @paste="pasteFromClipboard"
+    @copy="copyResult"
+  >
+    <template #options>
       <div class="algorithm-section">
         <label>哈希算法</label>
         <div class="algorithm-grid">
@@ -20,59 +29,32 @@
           </button>
         </div>
       </div>
+    </template>
 
-      <!-- 输入区域 -->
-      <div class="input-section">
-        <label>输入文本</label>
-        <textarea
-          v-model="inputText"
-          placeholder="请输入要计算哈希的文本..."
-          rows="5"
-        ></textarea>
-        <div class="input-actions">
-          <button class="action-btn small" @click="pasteFromClipboard">
-            📋 粘贴
-          </button>
-          <button class="action-btn small" @click="clearInput">
-            清空
-          </button>
-        </div>
+    <template #output-bottom>
+      <div class="hash-output" v-if="hashResult">
+        <code>{{ hashResult }}</code>
       </div>
+    </template>
 
-      <!-- 操作按钮 -->
-      <div class="action-section">
-        <button class="action-btn primary" @click="computeHash" :disabled="!canCompute">
-          🔐 计算哈希
-        </button>
-      </div>
+    <template #output-actions>
+      <button class="copy-btn secondary" @click="copyWithInfo">
+        📋 详情
+      </button>
+    </template>
 
-      <!-- 输出区域 -->
-      <div class="output-section" v-if="hashResult">
-        <label>哈希结果</label>
-        <div class="hash-output">
-          <code>{{ hashResult }}</code>
-        </div>
-        <div class="output-actions">
-          <button class="copy-btn" @click="copyResult">
-            {{ copied ? '✅ 已复制' : '📋 复制' }}
-          </button>
-          <button class="copy-btn secondary" @click="copyWithInfo">
-            📋 详情
-          </button>
-        </div>
-      </div>
-
-      <!-- 信息提示 -->
+    <template #footer>
       <div class="info-msg" v-if="algorithmInfo">
         ℹ️ {{ algorithmInfo }}
       </div>
-    </main>
-  </div>
+    </template>
+  </ToolLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import CryptoJS from 'crypto-js'
+import ToolLayout from '../components/ToolLayout.vue'
 
 const algorithm = ref('md5')
 const inputText = ref('')
@@ -154,112 +136,11 @@ const copyWithInfo = async () => {
 </script>
 
 <style scoped>
-.hash-tool {
-  --text-color: #333;
-  --text-light: #666;
-  --text-muted: #999;
-  --bg-color: #fff;
-  --page-bg: #f5f5f5;
-  --border-color: #e0e0e0;
-  --input-bg: #fff;
-  --section-bg: #f9f9f9;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --primary-color: #42b983;
-  --primary-hover: #3aa876;
-  --secondary-bg: #f0f0f0;
-  --secondary-hover: #e0e0e0;
-  --info-bg: #e3f2fd;
-  --info-text: #1976d2;
-
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  background: var(--page-bg);
-}
-
-@media (prefers-color-scheme: dark) {
-  .hash-tool {
-    --text-color: #e0e0e0;
-    --text-light: #b0b0b0;
-    --text-muted: #808080;
-    --bg-color: #1e1e1e;
-    --page-bg: #121212;
-    --border-color: #333;
-    --input-bg: #2a2a2a;
-    --section-bg: #2a2a2a;
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --primary-color: #42b983;
-    --primary-hover: #3aa876;
-    --secondary-bg: #333;
-    --secondary-hover: #444;
-    --info-bg: #1a3a5a;
-    --info-text: #64b5f6;
-  }
-}
-
-[data-theme="dark"] .hash-tool {
-  --text-color: #e0e0e0;
-  --text-light: #b0b0b0;
-  --text-muted: #808080;
-  --bg-color: #1e1e1e;
-  --page-bg: #121212;
-  --border-color: #333;
-  --input-bg: #2a2a2a;
-  --section-bg: #2a2a2a;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --primary-color: #42b983;
-  --primary-hover: #3aa876;
-  --secondary-bg: #333;
-  --secondary-hover: #444;
-  --info-bg: #1a3a5a;
-  --info-text: #64b5f6;
-}
-
-[data-theme="light"] .hash-tool {
-  --text-color: #333;
-  --text-light: #666;
-  --text-muted: #999;
-  --bg-color: #fff;
-  --page-bg: #f5f5f5;
-  --border-color: #e0e0e0;
-  --input-bg: #fff;
-  --section-bg: #f9f9f9;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --primary-color: #42b983;
-  --primary-hover: #3aa876;
-  --secondary-bg: #f0f0f0;
-  --secondary-hover: #e0e0e0;
-  --info-bg: #e3f2fd;
-  --info-text: #1976d2;
-}
-
-.tool-header { margin-bottom: 2rem; }
-.back-btn {
-  display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--primary-color);
-  text-decoration: none;
-  cursor: pointer;
-}
-.back-btn:hover { text-decoration: underline; }
-.tool-header h1 { font-size: 2rem; color: var(--text-color); }
-
-.tool-content {
-  background: var(--bg-color);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: var(--shadow);
-}
-
 .algorithm-section { margin-bottom: 1.5rem; }
 .algorithm-section label {
   display: block;
   margin-bottom: 0.75rem;
   font-weight: 500;
-  color: var(--text-color);
 }
 .algorithm-grid {
   display: grid;
@@ -269,85 +150,28 @@ const copyWithInfo = async () => {
 .algorithm-grid button {
   padding: 0.75rem 0.5rem;
   border: 1px solid var(--border-color);
-  background: var(--bg-color);
+  background: var(--card-bg);
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
   color: var(--text-color);
 }
-.algorithm-grid button:hover { background: var(--secondary-bg); }
+.algorithm-grid button:hover { background: var(--bg-color); }
 .algorithm-grid button.active {
   border-color: var(--primary-color);
   background: var(--primary-color);
   color: #fff;
 }
 
-.input-section, .output-section { margin-bottom: 1.5rem; }
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--text-color);
-}
-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  font-family: inherit;
-  resize: vertical;
-  background: var(--input-bg);
-  color: var(--text-color);
-}
-textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
-}
-
-.input-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-.action-btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.action-btn.small {
-  background: var(--secondary-bg);
-  color: var(--text-color);
-}
-.action-btn.small:hover { background: var(--secondary-hover); }
-
-.action-section {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.action-btn.primary {
-  flex: 1;
-  padding: 0.875rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  background: var(--primary-color);
-  color: #fff;
-}
-.action-btn.primary:hover:not(:disabled) { background: var(--primary-hover); }
-.action-btn.primary:disabled { background: var(--text-muted); cursor: not-allowed; }
-
 .hash-output {
-  background: var(--section-bg);
+  background: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
   overflow-x: auto;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
 }
 .hash-output code {
   font-family: 'Consolas', 'Monaco', monospace;
@@ -356,34 +180,20 @@ textarea:focus {
   word-break: break-all;
 }
 
-.output-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-.copy-btn {
-  padding: 0.5rem 1rem;
-  background: var(--primary-color);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-.copy-btn:hover { background: var(--primary-hover); }
 .copy-btn.secondary {
-  background: var(--secondary-bg);
+  background: var(--bg-color);
   color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
-.copy-btn.secondary:hover { background: var(--secondary-hover); }
+.copy-btn.secondary:hover { background: var(--border-color); }
 
 .info-msg {
   margin-top: 1rem;
   padding: 1rem;
-  background: var(--info-bg);
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: var(--info-text);
+  color: var(--primary-color);
   font-size: 0.9rem;
 }
 </style>

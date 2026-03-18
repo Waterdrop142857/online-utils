@@ -26,10 +26,18 @@ export const tools = [
   {
     id: 'url-encode',
     name: 'URL 编解码',
-    description: 'URL 编码和解码工具，支持自动检测多重编码',
+    description: 'URL 编码 and 解码工具，支持自动检测多重编码',
     icon: '🔗',
     category: '数据处理',
     path: '/tools/url'
+  },
+  {
+    id: 'totp',
+    name: '2FA 验证码',
+    description: '在线 2FA (TOTP) 验证码生成器，支持 Google Authenticator 密钥',
+    icon: '🔑',
+    category: '加密工具',
+    path: '/tools/totp'
   },
   {
     id: 'uuid',
