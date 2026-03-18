@@ -168,9 +168,8 @@ const filteredTools = computed(() => {
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 1.5rem;
-  flex: 1;
-  align-items: start;
 }
 
 .tool-card {
@@ -185,6 +184,7 @@ const filteredTools = computed(() => {
   color: var(--text-color);
   transition: all 0.2s;
   cursor: pointer;
+  height: 100%;
 }
 
 .tool-card:hover {
@@ -196,19 +196,22 @@ const filteredTools = computed(() => {
 .tool-icon {
   font-size: 3rem;
   margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 .tool-name {
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
   color: var(--text-color);
+  flex-shrink: 0;
 }
 
 .tool-description {
   font-size: 0.9rem;
   color: var(--text-light);
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  flex: 1;
 }
 
 .tool-category {
@@ -217,6 +220,7 @@ const filteredTools = computed(() => {
   background: var(--category-bg);
   border-radius: 12px;
   color: var(--text-light);
+  margin-top: auto;
 }
 
 .footer {
