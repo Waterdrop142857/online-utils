@@ -16,16 +16,21 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
+      - name: Install pnpm 📦
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node ⚙️
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'yarn'
+          node-version: 24
+          cache: 'pnpm'
 
       - name: Install and Build 🔧
         run: |
-          yarn install --frozen-lockfile
-          yarn build
+          pnpm install --frozen-lockfile
+          pnpm build
           touch dist/.nojekyll
         env:
           VITE_BASE: /online-utils/
